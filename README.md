@@ -68,6 +68,40 @@ SimpleIouTracker  (ByteTrack stub)
 | `inspect_wire.py` | Forensic decoder for `wire_log.bin` |
 | `test_integration.py` | End-to-end smoke tests |
 
+## Models
+
+The perception ensemble combines a closed-set tactical detector, an
+open-vocabulary VLM detector, and (planned) a scene-caption VLM. None of
+these weights are committed — bring your own and drop them in `models/`.
+
+### Wired today
+
+| Model | Role | Source |
+|---|---|---|
+| **Grounding DINO Tiny** (`IDEA-Research/grounding-dino-tiny`) | Open-vocabulary detection — text-prompted zero-shot bboxes for things YOLO doesn't know (e.g. *"truck towing artillery piece"*, *"soldiers crouching beside vehicle"*). The only true VLM in the always-on perception path. | [Hugging Face](https://huggingface.co/IDEA-Research/grounding-dino-tiny) · [paper](https://arxiv.org/abs/2303.05499) · [repo](https://github.com/IDEA-Research/GroundingDINO) |
+| **YOLO11L — MilitaryConvoy weights** (`models/MilitaryConvoy-YOLO11L.pt`) | Closed-set detector with clean ontology labels (tank, APC, artillery, military_vehicle, …). Wins on label arbitration when both detectors fire on the same box. Run via [SAHI](https://github.com/obss/sahi) for tiled inference on high-res frames. | [Ultralytics YOLO11 docs](https://docs.ultralytics.com/models/yolo11/) · weights are user-supplied (custom-trained) |
+| **SAHI** (Slicing Aided Hyper Inference) | Wraps the YOLO11L call to slice large frames into overlapping tiles, run inference per tile, and merge — recovers small/distant targets that vanish at 640×640. | [github.com/obss/sahi](https://github.com/obss/sahi) |
+
+### Planned / stubbed
+
+| Model | Role | Source |
+|---|---|---|
+| **Florence-2** (`microsoft/Florence-2-base` or `-large`) | Burst-mode scene-caption VLM. Fired only when an STRE Type 2 inference triggers, to attach a rich natural-language description of the supporting frame (e.g. *"A column of three armored vehicles moving south along a treeline at dusk"*). Currently stubbed in `vlm_channel.py` — captions today are deterministic strings; swap in Florence-2 with one model load. | [Hugging Face](https://huggingface.co/microsoft/Florence-2-base) · [paper](https://arxiv.org/abs/2311.06242) |
+
+### Why this split
+
+Grounding DINO's open-vocab labels are great for human-readable scene
+descriptions but unstable for ontology types (the same artillery piece can come
+back as `"truck"`, `"vehicle"`, `"artillery piece"`, `"towed gun"` across
+frames). YOLO11L's closed-set labels are stable and ontology-friendly but blind
+to anything outside its training distribution. We run both, fuse on IoU > 0.5,
+and let YOLO11L's label win on agreement — best of both worlds at the cost of
+one extra forward pass per `gdino_every_n` frames.
+
+Only the closed-set, normalized class survives onto the STRE wire. Everything
+Grounding DINO and (eventually) Florence-2 produce ships on the rich VLM
+side-channel, joinable by `source_id` + timestamp.
+
 ## Quick start
 
 ### 1. Install
@@ -77,8 +111,9 @@ python3 -m venv venv && source venv/bin/activate
 pip install opencv-python numpy cbor2 cryptography ultralytics transformers torch pillow
 ```
 
-Drop a YOLO weights file at `models/military_convoy.pt` (not committed; bring
-your own).
+Drop your YOLO11L weights at `models/MilitaryConvoy-YOLO11L.pt` (not
+committed; see [Models](#models)). Grounding DINO Tiny is auto-downloaded
+from Hugging Face on first run.
 
 ### 2. Run the edge demo (local, no network)
 
