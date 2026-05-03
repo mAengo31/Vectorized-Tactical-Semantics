@@ -174,8 +174,8 @@ Both processes share `~/.cask/cask.psk` (32-byte symmetric key) distributed out-
 - `pip install ultralytics sahi transformers cbor2 cryptography opencv-python pillow huggingface_hub`
 
 **Models**:
-- Closed-vocab military detector: `MuayThaiLegz/MilitaryConvoy-YOLO11L` (download `.pt` to `models/military_convoy.pt`)
-- Open-vocab VLM: `IDEA-Research/grounding-dino-tiny` (auto-downloaded by Transformers)
+- Closed-vocab military detector: `MuayThaiLegz/MilitaryConvoy-YOLO11L` — the 49 MB `.pt` file ships in this repo at `models/military_convoy.pt` via **Git LFS**. Make sure you have [`git-lfs`](https://git-lfs.com) installed (`brew install git-lfs && git lfs install`) **before** cloning, or run `git lfs pull` after.
+- Open-vocab VLM: `IDEA-Research/grounding-dino-tiny` (auto-downloaded by Transformers on first run)
 
 ### Hermetic test (single machine, no network)
 
@@ -363,7 +363,8 @@ sudo pfctl -F all -f /etc/pf.conf
 ## Models used
 
 ### Closed-vocabulary military detector
-- **HuggingFace repo**: `MuayThaiLegz/MilitaryConvoy-YOLO11L`
+- **HuggingFace repo**: [`MuayThaiLegz/MilitaryConvoy-YOLO11L`](https://huggingface.co/MuayThaiLegz/MilitaryConvoy-YOLO11L)
+- **Shipped in repo**: `models/military_convoy.pt` (49 MB, tracked via [Git LFS](https://git-lfs.com)). Clone with `git-lfs` installed or run `git lfs pull` to fetch the actual blob; otherwise you'll get a 134-byte pointer file.
 - **Architecture**: YOLO11-Large (Ultralytics, October 2024 release)
 - **Loaded via**: SAHI (`AutoDetectionModel.from_pretrained`, `model_type='ultralytics'`) for tile-based inference on high-resolution aerial frames
 - **Output classes**: `tank`, `apc`, `artillery`, `military_vehicle`, `civilian_vehicle`, `military_object`

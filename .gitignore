@@ -15,8 +15,8 @@ live_run/
 c2_run/
 *.tgz
 
-# Model weights (use LFS or document download)
-models/*.pt
+# Model weights — .pt now tracked via Git LFS (see .gitattributes); keep
+# safetensors out unless you explicitly LFS-track them too.
 models/*.safetensors
 
 # Test footage (large)
