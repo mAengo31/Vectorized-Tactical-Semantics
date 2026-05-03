@@ -1,0 +1,28 @@
+# CASK runtime dependencies.
+#
+# Install on Mac (C2 / dev):
+#   pip install -r requirements.txt
+#
+# Install on Jetson Orin Nano (edge): install torch + torchvision FIRST
+# from NVIDIA's Jetson wheel index (see README "Jetson edge"), THEN run
+#   pip install -r requirements.txt
+# so pip does not try to overwrite your Jetson-tuned torch with a generic
+# x86 wheel.
+
+# --- Wire protocol ---
+cbor2>=5.4         # STRE Type 1/2 CBOR encoding
+cryptography>=42.0 # COSE / ChaCha20-Poly1305 AEAD sealing
+
+# --- Perception ---
+numpy>=1.24
+opencv-python>=4.8 # frame I/O, annotation, NMS helpers
+Pillow>=10.0       # Grounding DINO PIL conversion
+sahi>=0.11         # tiled inference wrapper for YOLO11
+ultralytics>=8.3   # YOLO11 backend (invoked indirectly via sahi model_type='ultralytics')
+transformers>=4.41 # Grounding DINO loader (AutoProcessor + AutoModelForZeroShotObjectDetection)
+
+# --- ML backbone ---
+# torch is intentionally unpinned. On Jetson you MUST install the
+# NVIDIA-provided wheel (PyTorch 2.5.0 / torchvision 0.20.0 for JetPack 6.2)
+# BEFORE running this file, or pip will silently downgrade you to a CPU build.
+torch
