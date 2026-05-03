@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual env
+venv/
+.venv/
+env/
+
+# Run outputs
+demo_run/
+demo_run_mac/
+live_run/
+c2_run/
+*.tgz
+
+# Model weights (use LFS or document download)
+models/*.pt
+models/*.safetensors
+
+# Test footage (large)
+videos/*.mov
+videos/*.mp4
+
+# Editor
+.vscode/
+.idea/
+.DS_Store
+
+# OS
+*.swp
